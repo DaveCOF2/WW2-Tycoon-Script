@@ -1,21 +1,14 @@
--- WW2 Tycoon Script v6.5: Auto‑Collect Cash with Cash Threshold Feature (with Resized UI)
+-- WW2 Tycoon Script v6.5 Adapted for Arceus X UI Library (Thresholdâ€‘only)
 
--- Load the ArrayField UI Library
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/Refinement/main/MC%3AArrayfield%20Library"))()
+-- Load Arceus X UI Library
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
 
--- Create the main window
-local Window = Library:CreateWindow({
-    Name = "WW2 Tycoon Script",
-    ConfigurationSaving = { Enabled = false }
-})
-
--- Tabs
-local TabInfo     = Window:CreateTab("Info")
-local TabTycoon   = Window:CreateTab("Tycoon")
-local TabAdvanced = Window:CreateTab("Advanced")
-local TabMisc     = Window:CreateTab("Misc")
-local TabCheats   = Window:CreateTab("Player Cheats")
-local TabCredits  = Window:CreateTab("Credits")
+-- UI Setup
+lib:SetTitle("WW2 Tycoon Script v6.5")
+lib:SetIcon("http://www.roblox.com/asset/?id=9178187770")
+lib:SetBackgroundColor(40, 40, 40)
+lib:SetButtonsColor(55, 55, 55)
+lib:SetCloseBtnColor(255, 0, 0)
 
 -- Services & References
 local Players          = game:GetService("Players")
@@ -34,307 +27,165 @@ local function getPlayerTycoon()
     return nil
 end
 
--- ===== INFO TAB =====
-local InfoSection = TabInfo:CreateSection("Welcome & Usage", false)
-TabInfo:CreateLabel("Overview", InfoSection)
-TabInfo:CreateParagraph({
-    Title = "Quick Start",
-    Content = [[
-1. Tycoon → auto‑collect, auto‑buy, auto‑cash toggles  
-2. Advanced → performance & Anti‑AFK  
-3. Cheats → movement & utilities  
-4. Reset Character → force respawn if stuck
-]]
-}, InfoSection)
-TabInfo:CreateParagraph({
-    Title = "Requirements",
-    Content = "You must own a tycoon. The script auto‑detects it by matching your Player object."
-}, InfoSection)
-
--- ===== TYCOON TAB =====
-local TycoonSection = TabTycoon:CreateSection("Auto‑Tycoon Controls", false)
-
--- Auto‑Collect Droppers
+-- Droppers Configuration
 local droppers = {
-    { id = "d5",  label = "Basic Dropper",    desc = "Collects 5$ each cycle." },
-    { id = "d10", label = "Advanced Dropper", desc = "Collects 10$ each cycle." },
-    { id = "d15", label = "Super Dropper",    desc = "Collects 15$ each cycle." },
-    { id = "d21", label = "Ultimate Dropper", desc = "Collects 21$ each cycle." },
+    { id = "d5",  label = "Basic Dropper"    },
+    { id = "d10", label = "Advanced Dropper" },
+    { id = "d15", label = "Super Dropper"    },
+    { id = "d21", label = "Ultimate Dropper" },
 }
 for _, drop in ipairs(droppers) do
     local active = false
-    TabTycoon:CreateToggle({
-        Name = "Auto " .. drop.label,
-        CurrentValue = false,
-        SectionParent = TycoonSection,
-        Info = { Title = drop.label, Description = drop.desc },
-        Callback = function(on)
-            active = on
-            if on then
-                task.spawn(function()
-                    while active do
-                        local ty = getPlayerTycoon()
-                        if ty and ty.CollectorEvent then
-                            ty.CollectorEvent:FireServer(drop.id, "{}")
-                        end
-                        task.wait(0.05)
-                    end
-                end)
-            end
-        end,
-    })
-end
-
--- Auto‑Buy Upgrades
-local buyActive = false
-TabTycoon:CreateToggle({
-    Name = "Auto Buy Upgrades",
-    CurrentValue = false,
-    SectionParent = TycoonSection,
-    Info = { Title = "Auto Buy Upgrades", Description = "Automatically buys any available upgrade pads for you." },
-    Callback = function(on)
-        buyActive = on
-        if on then
+    lib:AddToggle("Auto " .. drop.label, function(state)
+        active = state
+        if state then
             task.spawn(function()
-                while buyActive do
+                while active do
                     local ty = getPlayerTycoon()
-                    if ty then
-                        for _, part in ipairs(ty:GetDescendants()) do
-                            if part.Name == "Head"
-                              and part:IsA("BasePart")
-                              and part.BrickColor == BrickColor.new("Shamrock") then
-                                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                                if root then
-                                    root.CFrame = part.CFrame + Vector3.new(0, 5, 0)
-                                    task.wait(1)
-                                end
-                            end
-                        end
+                    if ty and ty.CollectorEvent then
+                        ty.CollectorEvent:FireServer(drop.id, "{}")
                     end
-                    task.wait(2)
+                    task.wait(0.05)
                 end
             end)
         end
-    end,
-})
+    end, false)
+end
 
--- Cash threshold variables
-local isAutoCollecting = false
-local cashThreshold = 0
-local useThreshold = false
-local cashCheckFrequency = 2
-
--- Cash threshold input
-TabTycoon:CreateInput({
-    Name = "Cash Threshold",
-    PlaceholderText = "e.g. 10000",
-    NumbersOnly = true,
-    RemoveTextAfterFocusLost = false,
-    SectionParent = TycoonSection,
-    Info = { Title = "Cash Threshold", Description = "Set the cash amount to collect at. Player will only collect when reached." },
-    Callback = function(text)
-        local val = tonumber(text)
-        if val then cashThreshold = val print("Cash threshold set to: $" .. cashThreshold) end
+-- Auto Buy Upgrades Toggle
+local buyActive = false
+lib:AddToggle("Auto Buy Upgrades", function(state)
+    buyActive = state
+    if state then
+        task.spawn(function()
+            while buyActive do
+                local ty = getPlayerTycoon()
+                if ty then
+                    for _, part in ipairs(ty:GetDescendants()) do
+                        if part.Name == "Head" and part:IsA("BasePart") and part.BrickColor == BrickColor.new("Shamrock") then
+                            local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                            if root then
+                                root.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+                                task.wait(1)
+                            end
+                        end
+                    end
+                end
+                task.wait(2)
+            end
+        end)
     end
-})
+end, false)
 
-TabTycoon:CreateToggle({
-    Name = "Use Cash Threshold",
-    CurrentValue = false,
-    SectionParent = TycoonSection,
-    Info = { Title = "Use Cash Threshold", Description = "Only collect once threshold reached." },
-    Callback = function(on) useThreshold = on end
-})
+-- Cash Threshold Setting
+local cashThreshold = 0
+local useThreshold   = false
+local thresholdOptions = {"0","500","1000","5000","10000","20000"}
+lib:AddComboBox("Cash Threshold", thresholdOptions, function(selection)
+    cashThreshold = tonumber(selection) or 0
+    print("Cash threshold set to: $" .. cashThreshold)
+end)
+lib:AddToggle("Use Cash Threshold", function(state)
+    useThreshold = state
+end, false)
 
--- Helper: read cash label
+-- Utility to read current cash
 local function getCurrentCashValue()
-    local tycoon = getPlayerTycoon() if not tycoon then return 0 end
-    local cashLabel = tycoon:FindFirstChild("Essentials") and tycoon.Essentials:FindFirstChild("Giver")
-      and tycoon.Essentials.Giver:FindFirstChild("CashScreen")
-      and tycoon.Essentials.Giver.CashScreen:FindFirstChild("SurfaceGui")
-      and tycoon.Essentials.Giver.CashScreen.SurfaceGui:FindFirstChild("TextLabel")
-    if cashLabel then
-        local cashText = cashLabel.Text
-        local cashValue = cashText:gsub("[^%d]", "")
-        return tonumber(cashValue) or 0
+    local tycoon = getPlayerTycoon()
+    if not tycoon then return 0 end
+    local gui = tycoon:FindFirstChild("Essentials")
+        and tycoon.Essentials:FindFirstChild("Giver")
+        and tycoon.Essentials.Giver:FindFirstChild("CashScreen")
+        and tycoon.Essentials.Giver.CashScreen:FindFirstChild("SurfaceGui")
+        and tycoon.Essentials.Giver.CashScreen.SurfaceGui:FindFirstChild("TextLabel")
+    if gui then
+        local txt = gui.Text:gsub("[^%d]", "")
+        return tonumber(txt) or 0
     end
     return 0
 end
 
--- Auto Collect Cash
-TabTycoon:CreateToggle({
-    Name = "Auto Collect Cash",
-    CurrentValue = false,
-    SectionParent = TycoonSection,
-    Info = { Title = "Auto Collect Cash", Description = "Teleport to collector. Uses threshold if enabled." },
-    Callback = function(enabled)
-        isAutoCollecting = enabled
-        if enabled then
-            task.spawn(function()
-                while isAutoCollecting do
-                    local tycoon = getPlayerTycoon()
-                    if tycoon then
-                        local currentCash = getCurrentCashValue()
-                        local should = not useThreshold or (currentCash >= cashThreshold)
-                        if should then
-                            local givePart = tycoon:FindFirstChild("Essentials")
-                              and tycoon.Essentials:FindFirstChild("Giver")
-                              and tycoon.Essentials.Giver:FindFirstChild("GivePart")
-                            if givePart then
-                                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                                if hrp then
-                                    hrp.CFrame = CFrame.new(givePart.Position + Vector3.new(0,5,0)) * CFrame.Angles(0,math.rad(180),0)
-                                    print("Collecting cash: $"..currentCash)
-                                end
+-- Auto Collect Cash Toggle
+local autoCollect = false
+lib:AddToggle("Auto Collect Cash", function(state)
+    autoCollect = state
+    if state then
+        task.spawn(function()
+            while autoCollect do
+                local ty = getPlayerTycoon()
+                if ty then
+                    local cur = getCurrentCashValue()
+                    if (not useThreshold) or (cur >= cashThreshold) then
+                        local part = ty:FindFirstChild("Essentials")
+                            and ty.Essentials:FindFirstChild("Giver")
+                            and ty.Essentials.Giver:FindFirstChild("GivePart")
+                        if part then
+                            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                            if hrp then
+                                hrp.CFrame = CFrame.new(part.Position + Vector3.new(0,5,0)) * CFrame.Angles(0, math.rad(180), 0)
+                                print("Collected cash: $"..cur)
                             end
                         end
                     end
-                    task.wait(cashCheckFrequency)
                 end
-            end)
-        end
-    end,
-})
-
--- ===== ADVANCED TAB =====
-local AdvSection = TabAdvanced:CreateSection("Performance & AFK", false)
-TabAdvanced:CreateParagraph({ Title = "Interval Tuning", Content = [[
-– Default delay between collects is 0.05s (fast, higher CPU).
-– Increase to 0.1 or 0.2 to reduce lag.
-]] }, AdvSection)
-TabAdvanced:CreateToggle({
-    Name = "Anti‑AFK",
-    CurrentValue = true,
-    SectionParent = AdvSection,
-    Info = { Title = "Anti‑AFK", Description = "Simulate mouse movement to avoid kick." },
-    Callback = function(on)
-        if on then LocalPlayer.Idled:Connect(function() UserInputService:SendInputEvent(Enum.UserInputType.MouseMovement) end) end
-    end,
-})
-TabAdvanced:CreateInput({
-    Name = "Cash Check Frequency",
-    PlaceholderText = "2",
-    NumbersOnly = true,
-    RemoveTextAfterFocusLost = false,
-    SectionParent = AdvSection,
-    Info = { Title = "Cash Check Frequency", Description = "Seconds between cash checks." },
-    Callback = function(text)
-        local v = tonumber(text)
-        if v and v>=1 then cashCheckFrequency = v print("Cash check frequency set to: "..v) end
+                task.wait(2)
+            end
+        end)
     end
-})
+end, false)
 
--- ===== MISC TAB =====
-local MiscSection = TabMisc:CreateSection("Extras", false)
-TabMisc:CreateLabel("• Auto Team Selector (coming soon)", MiscSection)
-TabMisc:CreateLabel("• Auto‑Upgrade Claim (coming soon)", MiscSection)
+-- Anti-AFK Toggle
+lib:AddToggle("Anti-AFK", function(state)
+    if state then
+        Players.LocalPlayer.Idled:Connect(function()
+            UserInputService:SendInputEvent(Enum.UserInputType.MouseMovement)
+        end)
+    end
+end, true)
 
--- Cash Monitor display
-do
-    local CashMonitor = TabMisc:CreateSection("Cash Monitor", false)
-    local cashDisplay = TabMisc:CreateLabel("Current Cash: $0", CashMonitor)
-    task.spawn(function()
-        while true do
-            local c = getCurrentCashValue()
-            cashDisplay:Set("Current Cash: $"..tostring(c))
-            task.wait(1)
-        end
-    end)
-end
-
--- ===== PLAYER CHEATS TAB =====
-local CheatSection = TabCheats:CreateSection("Movement & Utility", false)
--- Walk Speed
-TabCheats:CreateInput({ Name = "Walk Speed", PlaceholderText = "e.g. 16", NumbersOnly = true, RemoveTextAfterFocusLost = false, SectionParent = CheatSection,
-    Info = { Title = "Walk Speed", Description = "Set your walking speed (default 16)." },
-    Callback = function(text)
-        local v = tonumber(text)
-        if v and LocalPlayer.Character then
-            local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if hum then hum.WalkSpeed = v end
-        end
-    end,
-})
--- Infinite Jump
-do
-    local infJump = false
-    TabCheats:CreateToggle({ Name = "Infinite Jump", CurrentValue = false, SectionParent = CheatSection,
-        Info = { Title = "Infinite Jump", Description = "Allows repeated mid‑air jumps." },
-        Callback = function(on) infJump = on end,
-    })
-    UserInputService.JumpRequest:Connect(function()
-        if infJump and LocalPlayer.Character then
-            LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end)
-end
--- Noclip
-do
-    local noclipConn
-    TabCheats:CreateToggle({ Name = "Noclip", CurrentValue = false, SectionParent = CheatSection,
-        Info = { Title = "Noclip", Description = "Phase through parts." },
-        Callback = function(on)
-            if on then
-                noclipConn = RunService.Stepped:Connect(function()
-                    if LocalPlayer.Character then
-                        for _,p in pairs(LocalPlayer.Character:GetDescendants()) do
-                            if p:IsA("BasePart") then p.CanCollide = false end
-                        end
-                    end
-                end)
-            elseif noclipConn then noclipConn:Disconnect() end
-        end,
-    })
-end
--- Teleport to Tycoon
-TabCheats:CreateButton({ Name = "Teleport to Tycoon", SectionParent = CheatSection,
-    Info = { Title = "Teleport to Tycoon", Description = "Move to your spawn pad instantly." },
-    Callback = function()
-        local ty = getPlayerTycoon()
-        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if ty and root and ty:FindFirstChild("SpawnLocation") then
-            root.CFrame = ty.SpawnLocation.CFrame + Vector3.new(0,5,0)
-        end
-    end,
-})
--- Reset Character
-TabCheats:CreateButton({ Name = "Reset Character", SectionParent = CheatSection,
-    Info = { Title = "Reset Character", Description = "Force respawn." },
-    Callback = function()
-        local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
-        if h then h.Health = 0 else LocalPlayer:LoadCharacter() end
-    end,
-})
-
--- ===== CREDITS TAB =====
-local CreditsSection = TabCredits:CreateSection("Authors & Tools", false)
-TabCredits:CreateParagraph({ Title = "Modified By", Content = "ThailandHUBp" }, CreditsSection)
-TabCredits:CreateParagraph({ Title = "UI Library", Content = "ArrayField Interface Suite by Meta & Sirius" }, CreditsSection)
-TabCredits:CreateParagraph({ Title = "Version", Content = "v6.5 - Added cash threshold collection" }, CreditsSection)
-
--- Display the window
-Window:Show()
-
--- ─── UI RESIZE OVERRIDE ──────────────────────────────────────────────────────────
-task.delay(0.1, function()
-    local coreGui = game:GetService("CoreGui")
-    local af = coreGui:FindFirstChild("ArrayField")
-    if af and af.Main then
-        local main = af.Main
-        -- Shrink overall window to 350×350
-        main.Size = UDim2.new(0, 350, 0, 350)
-        -- Shrink topbar height
-        if main.Topbar then main.Topbar.Size = UDim2.new(0, 350, 0, 30) end
-        -- Narrow side‑tabs if found
-        local side = af:FindFirstChild("SideTabList", true)
-        if side then side.Size = UDim2.new(0, 100, 0, 350) end
-        -- Adjust content area
-        local pages = af:FindFirstChild("Elements", true)
-        if pages and pages:IsA("ScrollingFrame") then
-            pages.CanvasSize = UDim2.new(0, 350, 1, 0)
-        end
+-- Player Cheats Section
+-- Walk Speed ComboBox
+local speedOpts = {"16","30","50","100"}
+lib:AddComboBox("Walk Speed", speedOpts, function(sel)
+    local v = tonumber(sel)
+    if v and LocalPlayer.Character then
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = v end
     end
 end)
+-- Infinite Jump Toggle
+local infJump = false
+lib:AddToggle("Infinite Jump", function(state) infJump = state end, false)
+UserInputService.JumpRequest:Connect(function()
+    if infJump and LocalPlayer.Character then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+-- Noclip Toggle
+local noclipConn
+lib:AddToggle("Noclip", function(state)
+    if state then
+        noclipConn = RunService.Stepped:Connect(function()
+            if LocalPlayer.Character then
+                for _,p in ipairs(LocalPlayer.Character:GetDescendants()) do
+                    if p:IsA("BasePart") then p.CanCollide = false end
+                end
+            end
+        end)
+    elseif noclipConn then noclipConn:Disconnect() end
+end, false)
+-- Teleport to Tycoon Button
+lib:AddButton("Teleport to Tycoon", function()
+    local ty = getPlayerTycoon()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if ty and root and ty:FindFirstChild("SpawnLocation") then
+        root.CFrame = ty.SpawnLocation.CFrame + Vector3.new(0,5,0)
+    end
+end)
+-- Reset Character Button
+lib:AddButton("Reset Character", function()
+    local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if h then h.Health = 0 else LocalPlayer:LoadCharacter() end
+end)
 
--- Return the library handle if needed
-return Library
+print("WW2 Tycoon Script (Arceus) loaded.")
