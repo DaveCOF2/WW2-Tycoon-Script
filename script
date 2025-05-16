@@ -1,26 +1,45 @@
--- WW2 Tycoon Script v6.5: Autoâ€‘Collect Cash with Cash Threshold Feature
+local ArrayField = loadstring(game:HttpGet('https://raw.githubusercontent.com/vqmpjayZ/laboratory/refs/heads/main/ArrayFieldMobile.lua'))()
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/Refinement/main/MC%3AArrayfield%20Library"))()
-
-local Window = Library:CreateWindow({
-    Name = "ðŸ”¥ WW2 Tycoon Script ðŸ”¥",
-    ConfigurationSaving = { Enabled = false }
+local Window = ArrayField:CreateWindow({
+    Name = "🔥 WW2 Tycoon Script 🔥",
+    LoadingTitle = "WW2 Tycoon Premium",
+    LoadingSubtitle = "by DaveCOF2",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "WW2TycoonPremium", 
+        FileName = "WW2TycoonConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "premium", 
+        RememberJoins = true
+    },
+    KeySystem = false, 
+    KeySettings = {
+        Title = "WW2 Tycoon Premium",
+        Subtitle = "Key Authentication",
+        Note = "Enter your premium key to access the script",
+        FileName = "WW2TycoonKeys",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"PREMIUM2025", "WW2TYCOON", "DAVECOF2"},
+        Actions = {
+            [1] = {
+                Text = 'Click here to get a key',
+                OnPress = function()
+                    setclipboard("https://discord.gg/premium")
+                end,
+            }
+        },
+    }
 })
 
--- Tabs
-local TabInfo     = Window:CreateTab("â„¹ï¸ Info")
-local TabTycoon   = Window:CreateTab("ðŸ­ Tycoon")
-local TabAdvanced = Window:CreateTab("âš™ï¸ Advanced")
-local TabMisc     = Window:CreateTab("ðŸ§° Misc")
-local TabCheats   = Window:CreateTab("ðŸ‘¾ Player Cheats")
-local TabCredits  = Window:CreateTab("ðŸ‘‘ Credits")
-
 -- Services & References
-local Players          = game:GetService("Players")
+local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local RunService       = game:GetService("RunService")
-local LocalPlayer      = Players.LocalPlayer
-local TycoonsFolder    = workspace:FindFirstChild("Tycoon Systems") and workspace["Tycoon Systems"].Factory.Tycoons
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local TycoonsFolder = workspace:FindFirstChild("Tycoon Systems") and workspace["Tycoon Systems"].Factory.Tycoons
 
 -- Utility: find your tycoon
 local function getPlayerTycoon()
@@ -32,42 +51,60 @@ local function getPlayerTycoon()
     return nil
 end
 
+-- Tabs
+local TabInfo = Window:CreateTab("ℹ️ Info", 9072328584) -- Information icon
+local TabTycoon = Window:CreateTab("🏭 Tycoon", 9607546890) -- Factory icon
+local TabAdvanced = Window:CreateTab("⚙️ Advanced", 9071979231) -- Gear icon
+local TabMisc = Window:CreateTab("🧰 Misc", 9071968947) -- Toolbox icon
+local TabCheats = Window:CreateTab("👾 Player Cheats", 9087986233) -- Player icon
+local TabCredits = Window:CreateTab("👑 Credits", 9072340668) -- Crown icon
+
 -- ===== INFO TAB =====
-local InfoSection = TabInfo:CreateSection("âœ¨ Welcome & Usage âœ¨", false)
-TabInfo:CreateLabel("ðŸ“‹ Overview", InfoSection)
+local InfoSection = TabInfo:CreateSection("✨ Welcome & Usage ✨")
+TabInfo:CreateSpacing(nil, 10)
+
 TabInfo:CreateParagraph({
-    Title = "ðŸš€ Quick Start Guide",
+    Title = "🚀 Quick Start Guide",
     Content = [[
-1. ðŸ­ Tycoon â†’ Toggle autoâ€‘collect, autoâ€‘buy, autoâ€‘cash features  
-2. âš™ï¸ Advanced â†’ Optimize performance & Enable Antiâ€‘AFK  
-3. ðŸ‘¾ Cheats â†’ Enhance movement & utility features  
-4. ðŸ”„ Reset Character â†’ Force respawn if you get stuck
+1. 🏭 Tycoon → Toggle auto‑collect, auto‑buy, auto‑cash features  
+2. ⚙️ Advanced → Optimize performance & Enable Anti‑AFK  
+3. 👾 Cheats → Enhance movement & utility features  
+4. 🔄 Reset Character → Force respawn if you get stuck
 
 This premium script automatically manages your tycoon operations for maximum profits!
 ]]
-}, InfoSection)
+})
+
+TabInfo:CreateSpacing(nil, 10)
+
 TabInfo:CreateParagraph({
-    Title = "ðŸ“Œ Requirements",
+    Title = "📌 Requirements",
     Content = "You must own a tycoon to use this script. The system automatically detects your tycoon by matching your Player object with the tycoon owner."
-}, InfoSection)
+})
 
 -- ===== TYCOON TAB =====
-local TycoonSection = TabTycoon:CreateSection("ðŸ’° Autoâ€‘Tycoon Controls ðŸ’°", false)
+local TycoonSection = TabTycoon:CreateSection("💰 Auto‑Tycoon Controls 💰")
 
--- Autoâ€‘Collect Droppers
+-- Auto‑Collect Droppers
 local droppers = {
     { id = "d5",  label = "Basic Dropper",    desc = "Collects 5$ each cycle. Perfect for starting out!" },
     { id = "d10", label = "Advanced Dropper", desc = "Collects 10$ each cycle. Double the income!" },
     { id = "d15", label = "Super Dropper",    desc = "Collects 15$ each cycle. Triple your profits!" },
     { id = "d21", label = "Ultimate Dropper", desc = "Collects 21$ each cycle. Maximum earnings potential!" },
 }
+
+TabTycoon:CreateSpacing(nil, 10)
+
 for _, drop in ipairs(droppers) do
     local active = false
-    TabTycoon:CreateToggle({
-        Name = "ðŸ”„ Auto " .. drop.label,
+    local Toggle = TabTycoon:CreateToggle({
+        Name = "🔄 Auto " .. drop.label,
+        Info = {
+            Title = "💎 " .. drop.label, 
+            Description = drop.desc
+        },
         CurrentValue = false,
-        SectionParent = TycoonSection,
-        Info = { Title = "ðŸ’Ž " .. drop.label, Description = drop.desc },
+        Flag = "auto_" .. drop.id,
         Callback = function(on)
             active = on
             if on then
@@ -83,18 +120,19 @@ for _, drop in ipairs(droppers) do
             end
         end,
     })
+    TabTycoon:CreateSpacing(nil, 5)
 end
 
--- Autoâ€‘Buy Upgrades
+-- Auto‑Buy Upgrades
 local buyActive = false
 TabTycoon:CreateToggle({
-    Name = "ðŸ›’ Auto Buy Upgrades",
-    CurrentValue = false,
-    SectionParent = TycoonSection,
+    Name = "🛒 Auto Buy Upgrades",
     Info = {
-        Title = "ðŸ›’ Auto Buy Upgrades",
+        Title = "🛒 Auto Buy Upgrades",
         Description = "Automatically purchases any available upgrade pads for you. Maximize your tycoon's potential without any manual work!"
     },
+    CurrentValue = false,
+    Flag = "auto_buy",
     Callback = function(on)
         buyActive = on
         if on then
@@ -109,17 +147,19 @@ TabTycoon:CreateToggle({
                                 local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                                 if root then
                                     root.CFrame = part.CFrame + Vector3.new(0, 5, 0)
-                                    task.wait(1)  -- Added 1 second wait after purchasing before teleporting to the next one
+                                    task.wait(1)
                                 end
                             end
                         end
                     end
-                    task.wait(2)  -- Increased delay between upgrade checks to avoid overlap
+                    task.wait(2)
                 end
             end)
         end
     end,
 })
+
+TabTycoon:CreateSpacing(nil, 10)
 
 -- Cash value tracking variables
 local isAutoCollecting = false
@@ -128,38 +168,36 @@ local useThreshold = false
 local cashCheckFrequency = 2
 
 -- Cash threshold input
-TabTycoon:CreateInput({
-    Name = "ðŸ’µ Cash Threshold",
-    PlaceholderText = "e.g. 10000",
-    NumbersOnly = true,
-    RemoveTextAfterFocusLost = false,
-    SectionParent = TycoonSection,
-    Info = {
-        Title = "ðŸ’µ Cash Threshold",
-        Description = "Set the cash amount to collect at. Player will be teleported to collect cash only when this value is reached or exceeded. Great for maximizing large collections!"
-    },
-    Callback = function(text)
-        local val = tonumber(text)
-        if val then
-            cashThreshold = val
-            print("Cash threshold set to: $" .. cashThreshold)
-        end
-    end
+TabTycoon:CreateSlider({
+    Name = "💵 Cash Threshold",
+    Range = {0, 100000},
+    Increment = 1000,
+    Suffix = "$",
+    CurrentValue = 0,
+    Flag = "cash_threshold",
+    Callback = function(val)
+        cashThreshold = val
+        print("Cash threshold set to: $" .. cashThreshold)
+    end,
 })
+
+TabTycoon:CreateSpacing(nil, 5)
 
 -- Toggle for using threshold
 TabTycoon:CreateToggle({
-    Name = "âš–ï¸ Use Cash Threshold",
-    CurrentValue = false,
-    SectionParent = TycoonSection,
+    Name = "⚖️ Use Cash Threshold",
     Info = {
-        Title = "âš–ï¸ Use Cash Threshold",
+        Title = "⚖️ Use Cash Threshold",
         Description = "When enabled, auto-collect will only trigger at the specified cash threshold. Optimize your collection timing!"
     },
+    CurrentValue = false,
+    Flag = "use_threshold",
     Callback = function(on)
         useThreshold = on
     end
 })
+
+TabTycoon:CreateSpacing(nil, 5)
 
 -- Function to get current cash value from the text label
 local function getCurrentCashValue()
@@ -184,13 +222,13 @@ end
 
 -- Auto Collect Cash with threshold logic
 TabTycoon:CreateToggle({
-    Name = "ðŸ’° Auto Collect Cash",
-    CurrentValue = false,
-    SectionParent = TycoonSection,
+    Name = "💰 Auto Collect Cash",
     Info = {
-        Title = "ðŸ’° Auto Collect Cash",
+        Title = "💰 Auto Collect Cash",
         Description = "Teleports your character to the cash collector. Can be configured to trigger only at a specific cash threshold. Never worry about collecting cash again!"
     },
+    CurrentValue = false,
+    Flag = "auto_collect_cash",
     Callback = function(enabled)
         isAutoCollecting = enabled
         if enabled then
@@ -211,11 +249,20 @@ TabTycoon:CreateToggle({
                                 if hrp then
                                     hrp.CFrame = CFrame.new(givePart.Position + Vector3.new(0, 5, 0)) * CFrame.Angles(0, math.rad(180), 0)
                                     print("Collecting cash: $" .. currentCash)
+                                    
+                                    -- Notify on collection when threshold is used
+                                    if useThreshold and currentCash >= cashThreshold then
+                                        ArrayField:Notify({
+                                            Title = "Cash Collected",
+                                            Content = "Successfully collected $" .. currentCash,
+                                            Duration = 3
+                                        })
+                                    end
                                 end
                             end
                         end
                     end
-                    task.wait(cashCheckFrequency)  -- Use the user-defined check frequency
+                    task.wait(cashCheckFrequency)
                 end
             end)
         end
@@ -223,23 +270,28 @@ TabTycoon:CreateToggle({
 })
 
 -- ===== ADVANCED TAB =====
-local AdvSection = TabAdvanced:CreateSection("âš¡ Performance & AFK Settings âš¡", false)
+local AdvSection = TabAdvanced:CreateSection("⚡ Performance & AFK Settings ⚡")
+TabAdvanced:CreateSpacing(nil, 10)
+
 TabAdvanced:CreateParagraph({
-    Title = "â±ï¸ Interval Tuning",
+    Title = "⏱️ Interval Tuning",
     Content = [[
-â€“ Default delay between collects is 0.05s (fastest, higher CPU usage).  
-â€“ Increase to 0.1 or 0.2 to reduce lag on slower systems.
-â€“ Find the perfect balance between speed and performance!
+– Default delay between collects is 0.05s (fastest, higher CPU usage).  
+– Increase to 0.1 or 0.2 to reduce lag on slower systems.
+– Find the perfect balance between speed and performance!
 ]]
-}, AdvSection)
+})
+
+TabAdvanced:CreateSpacing(nil, 10)
+
 TabAdvanced:CreateToggle({
-    Name = "ðŸ”„ Antiâ€‘AFK",
-    CurrentValue = true,
-    SectionParent = AdvSection,
+    Name = "🔄 Anti‑AFK",
     Info = {
-        Title = "ðŸ”„ Antiâ€‘AFK",
+        Title = "🔄 Anti‑AFK",
         Description = "Prevents idle kick by simulating slight mouse movement. Stay in the game indefinitely!"
     },
+    CurrentValue = true,
+    Flag = "anti_afk",
     Callback = function(on)
         if on then
             LocalPlayer.Idled:Connect(function()
@@ -249,99 +301,124 @@ TabAdvanced:CreateToggle({
     end
 })
 
+TabAdvanced:CreateSpacing(nil, 10)
+
 -- Cash collector frequency setting
-TabAdvanced:CreateInput({
-    Name = "â²ï¸ Cash Check Frequency",
-    PlaceholderText = "2",
-    NumbersOnly = true,
-    RemoveTextAfterFocusLost = false,
-    SectionParent = AdvSection,
-    Info = {
-        Title = "â²ï¸ Cash Check Frequency",
-        Description = "How often to check the cash value (in seconds). Lower values mean more frequent checks but higher CPU usage."
-    },
-    Callback = function(text)
-        local val = tonumber(text)
-        if val and val >= 1 then
-            cashCheckFrequency = val
-            print("Cash check frequency set to: " .. val .. " seconds")
-        end
-    end
+TabAdvanced:CreateSlider({
+    Name = "⏲️ Cash Check Frequency",
+    Range = {1, 10},
+    Increment = 0.5,
+    Suffix = "s",
+    CurrentValue = 2,
+    Flag = "cash_check_freq",
+    Callback = function(val)
+        cashCheckFrequency = val
+        print("Cash check frequency set to: " .. val .. " seconds")
+    end,
 })
 
 -- ===== MISC TAB =====
-local MiscSection = TabMisc:CreateSection("ðŸŽ® Extra Features ðŸŽ®", false)
-TabMisc:CreateLabel("â€¢ ðŸš© Auto Team Selector (coming soon)", MiscSection)
-TabMisc:CreateLabel("â€¢ ðŸ† Autoâ€‘Upgrade Claim (coming soon)", MiscSection)
-TabMisc:CreateLabel("â€¢ ðŸŽ¯ Auto-Target System (coming soon)", MiscSection)
-TabMisc:CreateLabel("â€¢ ðŸ”” Notification System (coming soon)", MiscSection)
+local MiscSection = TabMisc:CreateSection("🎮 Extra Features 🎮")
+TabMisc:CreateSpacing(nil, 10)
 
--- Add Cash Value Display
-local CashMonitorSection = TabMisc:CreateSection("ðŸ’µ Cash Monitor ðŸ’µ", false)
-local cashDisplayLabel = TabMisc:CreateLabel("Current Cash: $0", CashMonitorSection)
+-- Coming soon features
+TabMisc:CreateLabel("• 🚩 Auto Team Selector (coming soon)")
+TabMisc:CreateLabel("• 🏆 Auto‑Upgrade Claim (coming soon)")
+TabMisc:CreateLabel("• 🎯 Auto-Target System (coming soon)")
+TabMisc:CreateLabel("• 🔔 Notification System (coming soon)")
+
+TabMisc:CreateSpacing(nil, 15)
+
+-- Add Cash Value Display section
+local CashMonitorSection = TabMisc:CreateSection("💵 Cash Monitor 💵")
+TabMisc:CreateSpacing(nil, 10)
+
+local cashDisplayLabel = TabMisc:CreateLabel("💰 Current Cash: $0")
 
 -- Update cash display periodically
 task.spawn(function()
     while true do
         local cash = getCurrentCashValue()
         if cashDisplayLabel then
-            cashDisplayLabel:Set("ðŸ’° Current Cash: $" .. tostring(cash))
+            cashDisplayLabel:Set("💰 Current Cash: $" .. tostring(cash))
         end
         task.wait(1)
     end
 end)
 
 -- ===== PLAYER CHEATS TAB =====
-local CheatSection = TabCheats:CreateSection("ðŸ”§ Movement & Utility Enhancements ðŸ”§", false)
+local CheatSection = TabCheats:CreateSection("🔧 Movement & Utility Enhancements 🔧")
+TabCheats:CreateSpacing(nil, 10)
 
--- Walk Speed Input
-TabCheats:CreateInput({
-    Name = "ðŸƒ Walk Speed",
-    PlaceholderText = "e.g. 16",
-    NumbersOnly = true,
-    RemoveTextAfterFocusLost = false,
-    SectionParent = CheatSection,
-    Info = {
-        Title = "ðŸƒ Walk Speed",
-        Description = "Set your character's walking speed (default 16). Higher values make you move faster! Try 50 for a big boost."
-    },
-    Callback = function(text)
-        local val = tonumber(text)
-        if val and LocalPlayer.Character then
+-- Walk Speed Slider
+TabCheats:CreateSlider({
+    Name = "🏃 Walk Speed",
+    Range = {16, 200},
+    Increment = 1,
+    Suffix = "speed",
+    CurrentValue = 16,
+    Flag = "walk_speed",
+    Callback = function(val)
+        if LocalPlayer.Character then
             local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
             if hum then hum.WalkSpeed = val end
         end
-    end
+    end,
 })
+
+TabCheats:CreateSpacing(nil, 10)
+
+-- Jump Power Slider (Added feature)
+TabCheats:CreateSlider({
+    Name = "🦘 Jump Power",
+    Range = {50, 300},
+    Increment = 5,
+    Suffix = "power",
+    CurrentValue = 50,
+    Flag = "jump_power",
+    Callback = function(val)
+        if LocalPlayer.Character then
+            local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.JumpPower = val end
+        end
+    end,
+})
+
+TabCheats:CreateSpacing(nil, 10)
 
 -- Infinite Jump
 local infJump = false
 TabCheats:CreateToggle({
-    Name = "ðŸ¦˜ Infinite Jump",
-    CurrentValue = false,
-    SectionParent = CheatSection,
+    Name = "🦘 Infinite Jump",
     Info = {
-        Title = "ðŸ¦˜ Infinite Jump",
-        Description = "Allows repeated midâ€‘air jumps whenever you press Space. Reach any height with ease!"
+        Title = "🦘 Infinite Jump",
+        Description = "Allows repeated mid‑air jumps whenever you press Space. Reach any height with ease!"
     },
-    Callback = function(on) infJump = on end
+    CurrentValue = false,
+    Flag = "inf_jump",
+    Callback = function(on) 
+        infJump = on 
+    end
 })
+
 UserInputService.JumpRequest:Connect(function()
     if infJump and LocalPlayer.Character then
         LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
+TabCheats:CreateSpacing(nil, 10)
+
 -- Noclip
 local noclipConn
 TabCheats:CreateToggle({
-    Name = "ðŸ‘» Noclip",
-    CurrentValue = false,
-    SectionParent = CheatSection,
+    Name = "👻 Noclip",
     Info = {
-        Title = "ðŸ‘» Noclip",
+        Title = "👻 Noclip",
         Description = "Disable collisions on your character to phase through walls and objects. Perfect for exploring or escaping tight spaces!"
     },
+    CurrentValue = false,
+    Flag = "noclip",
     Callback = function(on)
         if on then
             noclipConn = RunService.Stepped:Connect(function()
@@ -357,12 +434,14 @@ TabCheats:CreateToggle({
     end
 })
 
+TabCheats:CreateSpacing(nil, 10)
+
 -- Teleport to Tycoon
 TabCheats:CreateButton({
-    Name = "ðŸ  Teleport to Tycoon",
-    SectionParent = CheatSection,
+    Name = "🏠 Teleport to Tycoon",
+    Interact = "Click",
     Info = {
-        Title = "ðŸ  Teleport to Tycoon",
+        Title = "🏠 Teleport to Tycoon",
         Description = "Instantly move you to your tycoon's spawn pad. Perfect for getting back to base quickly!"
     },
     Callback = function()
@@ -370,17 +449,31 @@ TabCheats:CreateButton({
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if ty and root and ty:FindFirstChild("SpawnLocation") then
             root.CFrame = ty.SpawnLocation.CFrame + Vector3.new(0,5,0)
+            
+            ArrayField:Notify({
+                Title = "Teleported",
+                Content = "Successfully teleported to your tycoon!",
+                Duration = 3
+            })
+        else
+            ArrayField:Notify({
+                Title = "Error",
+                Content = "Failed to teleport. Make sure you own a tycoon!",
+                Duration = 3
+            })
         end
     end
 })
 
+TabCheats:CreateSpacing(nil, 10)
+
 -- Reset Character
 TabCheats:CreateButton({
-    Name = "ðŸ”„ Reset Character",
-    SectionParent = CheatSection,
+    Name = "🔄 Reset Character",
+    Interact = "Click",
     Info = {
-        Title = "ðŸ”„ Reset Character",
-        Description = "Forceâ€‘respawn your character to escape traps, glitches, or stuck positions. Use this if you get trapped!"
+        Title = "🔄 Reset Character",
+        Description = "Force‑respawn your character to escape traps, glitches, or stuck positions. Use this if you get trapped!"
     },
     Callback = function()
         local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
@@ -389,30 +482,76 @@ TabCheats:CreateButton({
         else
             LocalPlayer:LoadCharacter()
         end
+        
+        ArrayField:Notify({
+            Title = "Character Reset",
+            Content = "Your character has been reset.",
+            Duration = 2
+        })
     end
 })
 
--- ===== CREDITS TAB =====
-local CreditsSection = TabCredits:CreateSection("ðŸŒŸ Script Information ðŸŒŸ", false)
-TabCredits:CreateParagraph({
-    Title = "ðŸ§™â€â™‚ï¸ Created and Modified By",
-    Content = "DaveCOF2"
-}, CreditsSection)
-TabCredits:CreateParagraph({
-    Title = "ðŸ› ï¸ UI Library",
-    Content = "ArrayField Interface Suite by Meta & Sirius"
-}, CreditsSection)
-TabCredits:CreateParagraph({
-    Title = "ðŸ“Š Version Information",
-    Content = "v6.5 - Premium Edition with cash threshold collection and enhanced UI"
-}, CreditsSection)
-TabCredits:CreateParagraph({
-    Title = "ðŸ“œ Script Description",
-    Content = "This premium script automates all aspects of WW2 Tycoon gameplay, featuring smart cash collection with threshold settings, auto-upgrading capabilities, and player enhancement tools. Built for efficiency and performance!"
-}, CreditsSection)
-TabCredits:CreateParagraph({
-    Title = "ðŸ’» Technical Details",
-    Content = "Optimized code structure with minimal resource usage. Compatible with all executor types."
-}, CreditsSection)
+TabCheats:CreateSpacing(nil, 10)
 
+-- Add keybind for TP to tycoon (new feature)
+local Keybind = TabCheats:CreateKeybind({
+    Name = "🏠 Quick TP to Tycoon Keybind",
+    CurrentKeybind = "T",
+    HoldToInteract = false,
+    Flag = "tp_keybind",
+    Callback = function(Keybind)
+        local ty = getPlayerTycoon()
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if ty and root and ty:FindFirstChild("SpawnLocation") then
+            root.CFrame = ty.SpawnLocation.CFrame + Vector3.new(0,5,0)
+        end
+    end,
+})
+
+-- ===== CREDITS TAB =====
+local CreditsSection = TabCredits:CreateSection("🌟 Script Information 🌟")
+TabCredits:CreateSpacing(nil, 10)
+
+TabCredits:CreateParagraph({
+    Title = "🧙‍♂️ Created and Modified By",
+    Content = "DaveCOF2"
+})
+
+TabCredits:CreateSpacing(nil, 10)
+
+TabCredits:CreateParagraph({
+    Title = "🛠️ UI Library",
+    Content = "ArrayField Mobile Interface Suite"
+})
+
+TabCredits:CreateSpacing(nil, 10)
+
+TabCredits:CreateParagraph({
+    Title = "📊 Version Information",
+    Content = "v7.0 - Premium Edition with key system, cash threshold collection, and enhanced UI"
+})
+
+TabCredits:CreateSpacing(nil, 10)
+
+TabCredits:CreateParagraph({
+    Title = "📜 Script Description",
+    Content = "This premium script automates all aspects of WW2 Tycoon gameplay, featuring smart cash collection with threshold settings, auto-upgrading capabilities, and player enhancement tools. Built for efficiency and performance!"
+})
+
+TabCredits:CreateSpacing(nil, 10)
+
+TabCredits:CreateParagraph({
+    Title = "💻 Technical Details",
+    Content = "Optimized code structure with minimal resource usage. Compatible with all executor types. Now with premium key system and configuration saving."
+})
+
+-- Notify that script has loaded
+ArrayField:Notify({
+    Title = "WW2 Tycoon Premium",
+    Content = "Script has been loaded successfully! Enjoy the premium features.",
+    Duration = 5
+})
+
+-- Make the window visible
+wait(3)
 Window:Show()
